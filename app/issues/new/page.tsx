@@ -7,14 +7,17 @@ import {Controller, useForm} from "react-hook-form";
 import axios from "axios";
 import {useRouter} from "next/navigation";
 import {useState} from "react";
+import {zodResolver} from '@hookform/resolvers/zod';
+import {z} from "zod";
+import {createIssueSchema} from "@/app/validationSchemas";
+import ErrorMessage from "@/app/components/ErrorMessage";
 
-interface IssueForm {
-    title: string;
-    description: string;
-}
+type IssueForm = z.infer<typeof createIssueSchema>;
 
 const NewIssuePage = () => {
-    const { control, register, handleSubmit } = useForm<IssueForm>();
+    const { control, register, handleSubmit, formState: { errors } } = useForm<IssueForm>({
+        resolver: zodResolver(createIssueSchema)
+    });
     const router = useRouter();
     const [error, setError] = useState<string>();
 
@@ -37,11 +40,13 @@ const NewIssuePage = () => {
                 <TextField.Root>
                     <TextField.Input placeholder='Title' {...register('title')} />
                 </TextField.Root>
+                <ErrorMessage>{errors.title?.message}</ErrorMessage>
                 <Controller
                     name="description"
                     control={control}
                     render={({field}) => <SimpleMDE placeholder='Description' {...field} />}
                 />
+                <ErrorMessage>{errors.description?.message}</ErrorMessage>
                 <Button>Submit New Issue</Button>
             </form>
             {error && (
