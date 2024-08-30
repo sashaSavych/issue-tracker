@@ -7,12 +7,16 @@ import ReactMarkdown from "react-markdown";
 import {AiFillEdit} from "react-icons/ai";
 import Link from "next/link";
 import "easymde/dist/easymde.min.css";
+import {getServerSession} from "next-auth";
+import {authOptions} from "@/app/auth/authOptions";
 
 interface Props {
     params: { id: string }
 }
 
 const IssueDetailsPage = async ({ params }: Props) => {
+    const session = await getServerSession(authOptions);
+
     const issue = await prisma.issue.findUnique({
         where: { id: parseInt(params.id) }
     })
@@ -33,12 +37,14 @@ const IssueDetailsPage = async ({ params }: Props) => {
                     <ReactMarkdown>{issue.description}</ReactMarkdown>
                 </Card>
             </Box>
-            <Box>
-                <Button>
-                    <AiFillEdit/>
-                    <Link href={`/issues/${issue.id}/edit`}>Edit</Link>
-                </Button>
-            </Box>
+            {session && (
+                <Box>
+                    <Button>
+                        <AiFillEdit/>
+                        <Link href={`/issues/${issue.id}/edit`}>Edit</Link>
+                    </Button>
+                </Box>
+            )}
         </Grid>
     );
 };
